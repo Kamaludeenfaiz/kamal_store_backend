@@ -38,6 +38,25 @@ const createLessons = (lessons) => async (req, res) => {
   }
 };
 
+const getLessons = (lessons) => async (req, res) => {
+  try {
+    const results = await lessons.find({}).toArray();
+    res.status(200).json({ message: 'Lessons fetched successfully', results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const updateLesson = (lessons) => async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await lessons.updateOne({ _id: new ObjectId(id) }, { $set: req.body });
+    res.json({ message: 'Lesson updated successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 
 // Main function to initialize app and routes
@@ -46,9 +65,9 @@ const startApp = async () => {
   const lessons = db.collection('lessons');
   const orders = db.collection('orders');
 
-  // app.post('/api/lessons', createLessons(lessons));
-  // app.put('/api/lessons/:id', updateLesson(lessons));
-  // app.get('/api/lessons', getLessons(lessons));
+  app.post('/api/lessons', createLessons(lessons));
+  app.put('/api/lessons/:id', updateLesson(lessons));
+  app.get('/api/lessons', getLessons(lessons));
   // app.post('/api/orders', createOrder(lessons, orders));
   // app.get('/api/orders', getOrders(orders));
   // app.get('/api/search', searchLessons(lessons));
