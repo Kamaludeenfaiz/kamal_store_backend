@@ -24,6 +24,20 @@ const connectDb = async () => {
   }
 };
 
+/**
+ * 
+ * @param {*} lessons 
+ * @returns Routes
+ */
+const createLessons = (lessons) => async (req, res) => {
+  try {
+    const result = await lessons.insertMany(req.body);
+    res.status(201).json({ message: 'Lessons created successfully', result });
+  } catch (err) {
+    res.status(500).json({ error: err.message, success: false });
+  }
+};
+
 
 
 // Main function to initialize app and routes
