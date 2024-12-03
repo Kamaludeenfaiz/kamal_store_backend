@@ -57,6 +57,39 @@ const updateLesson = (lessons) => async (req, res) => {
   }
 };
 
+const createOrder = (lessons, orders) => async (req, res) => {
+  const { name, phone, lessonIDs, spaces } = req.body;
+  if (!name || !phone || !lessonIDs || !spaces) {
+    return res.status(400).json({ error: 'All fields are required.' });
+  }
+
+  try {
+    const selectedLessons = await lessons.find({ _id: { $in: lessonIDs.map(id => new ObjectId(id)) } }).toArray();
+    
+    for (const lesson of selectedLessons) {
+      if (lesson.spaces < spaces[lesson._id]) {
+        return res.status(400).json({ error: `Not enough spaces for lesson: ${lesson.subject}` });
+      }
+    }
+
+    const order = { name, phone, lessonIDs, spaces, createdAt: new Date() };
+    const orderResult = await orders.insertOne(order);
+    res.status(201).json({ message: 'Order created successfully', order: orderResult });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+const getOrders = (orders) => async (req, res) => {
+  try {
+    const results = await orders.find({}).toArray();
+    res.json({ message: 'Orders fetched successfully', results });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 
 
 // Main function to initialize app and routes
@@ -68,8 +101,8 @@ const startApp = async () => {
   app.post('/api/lessons', createLessons(lessons));
   app.put('/api/lessons/:id', updateLesson(lessons));
   app.get('/api/lessons', getLessons(lessons));
-  // app.post('/api/orders', createOrder(lessons, orders));
-  // app.get('/api/orders', getOrders(orders));
+  app.post('/api/orders', createOrder(lessons, orders));
+  app.get('/api/orders', getOrders(orders));
   // app.get('/api/search', searchLessons(lessons));
 
   app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
