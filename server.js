@@ -17,7 +17,7 @@ const connectDb = async () => {
   try {
     const client = await MongoClient.connect(MONGO_URL);
     console.log('MongoDB connected.');
-    return client.db('edushop_db');
+    return client.db('kalmal_store_db');
   } catch (err) {
     console.error(`Error connecting to MongoDB: ${err.message}`);
     process.exit(1);
