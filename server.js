@@ -89,6 +89,28 @@ const getOrders = (orders) => async (req, res) => {
   }
 };
 
+const searchLessons = (lessons) => async (req, res) => {
+  const { query } = req.query;
+  if (!query) return res.status(400).json({ message: 'Query parameter is required.' });
+
+  try {
+    const regex = new RegExp(query, 'i');
+    const results = await lessons.find({
+      $or: [
+        { subject: { $regex: regex } },
+        { location: { $regex: regex } },
+        { price: { $regex: regex } },
+        { spaces: { $regex: regex } },
+      ]
+    }).toArray();
+
+    res.json(results);
+  } catch (err) {
+    console.error('Search error:', err);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
 
 
 
@@ -103,7 +125,7 @@ const startApp = async () => {
   app.get('/api/lessons', getLessons(lessons));
   app.post('/api/orders', createOrder(lessons, orders));
   app.get('/api/orders', getOrders(orders));
-  // app.get('/api/search', searchLessons(lessons));
+  app.get('/api/search', searchLessons(lessons));
 
   app.listen(PORT, () => console.log(`Server running on port: ${PORT}`));
 };
