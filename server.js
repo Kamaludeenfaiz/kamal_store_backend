@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { MongoClient, ObjectId } from 'mongodb';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 const app = express();
@@ -9,6 +11,27 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Logger Middleware
+app.use((req, res, next) => {
+  const log = `[${new Date().toISOString()}] ${req.method} ${req.url}`;
+  console.log(`logger: ${log}`);
+  next();
+});
+
+// Static File Middleware for Lesson Images
+app.use('/images/:filename', (req, res) => {
+  const filePath = path.join(__dirname, 'lesson_images', req.params.filename);
+
+  fs.access(filePath, fs.constants.F_OK, (err) => {
+    if (err) {
+      console.error(`Image not found: ${filePath}`);
+      return res.status(404).json({ message: 'Image file does not exist.' });
+    }
+    res.sendFile(filePath);
+  });
+});
+
 
 const { MONGO_URL, PORT = 7000 } = process.env;
 
